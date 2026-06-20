@@ -27,10 +27,10 @@ cd server
 Em seguida, inicie cada serviço individualmente:
 
 ```bash
-cd server/sv-usuarios && npm run start:dev
-cd server/sv-publicacoes && npm run start:dev
-cd server/sv-match && npm run start:dev
-cd server/sv-notificacao && npm run start:dev
+cd server/sv-usuarios && yarn start:dev
+cd server/sv-publicacoes && yarn start:dev
+cd server/sv-match && yarn start:dev
+cd server/sv-notificacao && yarn start:dev
 ```
 
 ## Alunos
