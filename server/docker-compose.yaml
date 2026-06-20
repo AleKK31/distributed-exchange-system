@@ -1,0 +1,158 @@
+networks:
+    exchange-network:
+        driver: bridge
+
+volumes:
+    exchange-db-data:
+        driver: local
+
+services:
+    sv-usuarios:
+        build:
+            context: ./sv-usuarios
+            dockerfile: Dockerfile
+        image: sv-usuarios:1.0
+        container_name: sv-usuarios
+        hostname: sv-usuarios
+        restart: always
+        ports:
+            - "3001:3000"
+        environment:
+            - DATABASE_HOST=postgres
+            - DATABASE_PORT=5432
+            - DATABASE_USER=admin
+            - DATABASE_PASSWORD=admin
+            - DATABASE_NAME=exchange_db
+            - JWT_SECRET=troca_secret
+            - JWT_EXPIRATION=3600
+        depends_on:
+            - postgres
+        networks:
+            - exchange-network
+        deploy:
+            resources:
+                limits:
+                    memory: 200M
+
+    sv-publicacoes:
+        build:
+            context: ./sv-publicacoes
+            dockerfile: Dockerfile
+        image: sv-publicacoes:1.0
+        container_name: sv-publicacoes
+        hostname: sv-publicacoes
+        restart: always
+        ports:
+            - "3002:3000"
+        environment:
+            - DATABASE_HOST=postgres
+            - DATABASE_PORT=5432
+            - DATABASE_USER=admin
+            - DATABASE_PASSWORD=admin
+            - DATABASE_NAME=exchange_db
+            - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+        depends_on:
+            - postgres
+            - rabbitmq
+        networks:
+            - exchange-network
+        deploy:
+            resources:
+                limits:
+                    memory: 200M
+
+    sv-match:
+        build:
+            context: ./sv-match
+            dockerfile: Dockerfile
+        image: sv-match:1.0
+        container_name: sv-match
+        hostname: sv-match
+        restart: always
+        ports:
+            - "3003:3000"
+        environment:
+            - DATABASE_HOST=postgres
+            - DATABASE_PORT=5432
+            - DATABASE_USER=admin
+            - DATABASE_PASSWORD=admin
+            - DATABASE_NAME=exchange_db
+            - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+        depends_on:
+            - postgres
+            - rabbitmq
+        networks:
+            - exchange-network
+        deploy:
+            resources:
+                limits:
+                    memory: 200M
+
+    sv-notificacao:
+        build:
+            context: ./sv-notificacao
+            dockerfile: Dockerfile
+        image: sv-notificacao:1.0
+        container_name: sv-notificacao
+        hostname: sv-notificacao
+        restart: always
+        ports:
+            - "3004:3000"
+        environment:
+            - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+        depends_on:
+            - rabbitmq
+        networks:
+            - exchange-network
+        deploy:
+            resources:
+                limits:
+                    memory: 200M
+
+    rabbitmq:
+        image: rabbitmq:3-management
+        container_name: rabbitmq
+        hostname: rabbitmq
+        restart: always
+        ports:
+            - "5672:5672"
+            - "15672:15672"
+        environment:
+            - RABBITMQ_DEFAULT_USER=guest
+            - RABBITMQ_DEFAULT_PASS=guest
+        networks:
+            - exchange-network
+
+    postgres:
+        image: postgres:16
+        container_name: exchange-postgres
+        hostname: postgres
+        restart: always
+        ports:
+            - "5433:5432"
+        environment:
+            POSTGRES_USER: admin
+            POSTGRES_PASSWORD: admin
+            POSTGRES_DB: exchange_db
+        volumes:
+            - exchange-db-data:/var/lib/postgresql/data
+        networks:
+            - exchange-network
+
+    nginx:
+        build:
+            context: ./nginx
+            dockerfile: Dockerfile
+        image: exchange-nginx:1.0
+        container_name: nginx
+        hostname: nginx
+        restart: always
+        ports:
+            - "80:80"
+        depends_on:
+            - sv-usuarios
+            - sv-publicacoes
+            - sv-match
+            - sv-notificacao
+        networks:
+            - exchange-network
