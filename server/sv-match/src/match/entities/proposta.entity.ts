@@ -17,6 +17,7 @@ export enum PropostaStatus {
   ACEITO = 'aceito',
   RECUSADO = 'recusado',
   EXPIRADO = 'expirado',
+  CANCELADO = 'cancelado',
 }
 
 @Entity('propostas')

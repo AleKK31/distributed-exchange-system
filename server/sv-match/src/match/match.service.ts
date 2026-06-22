@@ -18,13 +18,18 @@ import {
   RespostaStatus,
 } from './entities/proposta.entity';
 
-interface PublicacaoCriadaPayload {
+interface PublicacaoEventPayload {
   id: string;
   usuario_id: string;
   item_oferto: string;
   item_desejado: string;
   categoria: string;
   created_at: string;
+}
+
+interface PublicacaoRemovidaPayload {
+  id: string;
+  usuario_id: string;
 }
 
 @Injectable()
@@ -41,8 +46,80 @@ export class MatchService {
     private readonly expiracaoService: ExpiracaoService,
   ) {}
 
-  async handlePublicacaoCriada(payload: PublicacaoCriadaPayload) {
+  async handlePublicacaoCriada(payload: PublicacaoEventPayload) {
+    await this.procurarPar(payload, 'publicacao.criada');
+  }
+
+  async handlePublicacaoAtualizada(payload: PublicacaoEventPayload) {
+    await this.procurarPar(payload, 'publicacao.atualizada');
+  }
+
+  async handlePublicacaoRemovida(payload: PublicacaoRemovidaPayload) {
     try {
+      const proposta = await this.repo.findOne({
+        where: [
+          { publicacao_a_id: payload.id, status: PropostaStatus.PENDENTE },
+          { publicacao_b_id: payload.id, status: PropostaStatus.PENDENTE },
+        ],
+      });
+
+      if (!proposta) {
+        this.logger.log(
+          `[publicacao.removida] sem proposta pendente para ${payload.id}`,
+        );
+        return;
+      }
+
+      proposta.status = PropostaStatus.CANCELADO;
+      const saved = await this.repo.save(proposta);
+
+      this.rmqClient.emit('match.cancelado', this.toEventPayload(saved));
+
+      this.logger.log(
+        `[match.cancelado] proposta ${saved.id} cancelada pela remoção de ${payload.id}`,
+      );
+    } catch (err) {
+      this.logger.error('[publicacao.removida] erro ao processar evento', err);
+    }
+  }
+
+  private async procurarPar(payload: PublicacaoEventPayload, origem: string) {
+    try {
+      const origens = await this.dataSource.query<
+        {
+          usuario_id: string;
+          item_oferto: string;
+          item_desejado: string;
+          status: string;
+        }[]
+      >(
+        `SELECT usuario_id, item_oferto, item_desejado, status
+         FROM publicacoes
+         WHERE id = $1`,
+        [payload.id],
+      );
+
+      const pub = origens[0];
+
+      if (!pub || pub.status !== 'disponivel') {
+        this.logger.log(`[${origem}] ${payload.id} indisponível para match`);
+        return;
+      }
+
+      const emProposta = await this.repo.findOne({
+        where: [
+          { publicacao_a_id: payload.id, status: PropostaStatus.PENDENTE },
+          { publicacao_b_id: payload.id, status: PropostaStatus.PENDENTE },
+        ],
+      });
+
+      if (emProposta) {
+        this.logger.log(
+          `[${origem}] ${payload.id} já está em proposta pendente`,
+        );
+        return;
+      }
+
       const candidato = await this.dataSource.query<
         { id: string; usuario_id: string }[]
       >(
@@ -59,11 +136,11 @@ export class MatchService {
            )
          ORDER BY p.created_at ASC
          LIMIT 1`,
-        [payload.usuario_id, payload.item_desejado, payload.item_oferto],
+        [pub.usuario_id, pub.item_desejado, pub.item_oferto],
       );
 
       if (!candidato.length) {
-        this.logger.log(`[publicacao.criada] sem par para ${payload.id}`);
+        this.logger.log(`[${origem}] sem par para ${payload.id}`);
         return;
       }
 
@@ -72,7 +149,7 @@ export class MatchService {
       const proposta = this.repo.create({
         publicacao_a_id: payload.id,
         publicacao_b_id: par.id,
-        usuario_a_id: payload.usuario_id,
+        usuario_a_id: pub.usuario_id,
         usuario_b_id: par.usuario_id,
       });
       const saved = await this.repo.save(proposta);
@@ -84,7 +161,7 @@ export class MatchService {
         `[match.encontrado] proposta ${saved.id} entre ${saved.publicacao_a_id} e ${saved.publicacao_b_id}`,
       );
     } catch (err) {
-      this.logger.error('[publicacao.criada] erro ao processar evento', err);
+      this.logger.error(`[${origem}] erro ao processar evento`, err);
     }
   }
 
