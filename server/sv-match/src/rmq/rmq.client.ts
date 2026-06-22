@@ -20,7 +20,7 @@ export const RMQ_CLIENT = 'RMQ_CLIENT';
                 'amqp://guest:guest@localhost:5672',
               ),
             ],
-            queue: 'publicacoes_producer_queue',
+            queue: 'match_producer_queue',
             exchange: config.get<string>('RABBITMQ_EXCHANGE', 'trocas.topic'),
             exchangeType: 'topic',
             wildcards: true,

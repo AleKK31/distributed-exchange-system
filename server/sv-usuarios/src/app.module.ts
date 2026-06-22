@@ -15,7 +15,7 @@ import { UsersModule } from './users/users.module';
       password: process.env.DATABASE_PASSWORD ?? 'admin',
       database: process.env.DATABASE_NAME ?? 'exchange_db',
       entities: [User],
-      synchronize: false,
+      synchronize: true,
     }),
     UsersModule,
   ],

@@ -22,15 +22,16 @@ docker compose -f server/docker-compose.yaml up --build
 ```bash
 cd server
 ./run-database.sh
+./run-rabbitmq.sh
 ```
 
 Em seguida, inicie cada serviço individualmente:
 
 ```bash
-cd server/sv-usuarios && yarn start:dev
-cd server/sv-publicacoes && yarn start:dev
-cd server/sv-match && yarn start:dev
-cd server/sv-notificacao && yarn start:dev
+cd server/sv-usuarios && yarn install && yarn start:dev
+cd server/sv-publicacoes && yarn install && yarn start:dev
+cd server/sv-match && yarn install && yarn start:dev
+cd server/sv-notificacao && yarn install && yarn start:dev
 ```
 
 ## Alunos
