@@ -5,10 +5,12 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
+import { ExpiracaoService } from '../rmq/expiracao.service';
 import { RMQ_CLIENT } from '../rmq/rmq.client';
 import {
   Proposta,
@@ -35,6 +37,8 @@ export class MatchService {
     private readonly dataSource: DataSource,
     @Inject(RMQ_CLIENT)
     private readonly rmqClient: ClientProxy,
+    @Inject(forwardRef(() => ExpiracaoService))
+    private readonly expiracaoService: ExpiracaoService,
   ) {}
 
   async handlePublicacaoCriada(payload: PublicacaoCriadaPayload) {
@@ -74,6 +78,7 @@ export class MatchService {
       const saved = await this.repo.save(proposta);
 
       this.rmqClient.emit('match.encontrado', this.toEventPayload(saved));
+      this.expiracaoService.agendar(saved.id);
 
       this.logger.log(
         `[match.encontrado] proposta ${saved.id} entre ${saved.publicacao_a_id} e ${saved.publicacao_b_id}`,
@@ -127,6 +132,17 @@ export class MatchService {
     }
 
     return this.repo.save(proposta);
+  }
+
+  async expirarSePendente(matchId: string) {
+    const proposta = await this.repo.findOneBy({ id: matchId });
+    if (!proposta) return;
+    if (proposta.status !== PropostaStatus.PENDENTE) return;
+
+    proposta.status = PropostaStatus.EXPIRADO;
+    const saved = await this.repo.save(proposta);
+    this.rmqClient.emit('match.expirado', this.toEventPayload(saved));
+    this.logger.log(`[match.expirado] proposta ${saved.id} expirada`);
   }
 
   private toEventPayload(p: Proposta) {
