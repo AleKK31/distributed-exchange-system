@@ -14,8 +14,10 @@ async function bootstrap() {
       queue: 'match_consumer_queue',
       exchange: process.env.RABBITMQ_EXCHANGE ?? 'trocas.topic',
       exchangeType: 'topic',
+      wildcards: true,
       queueOptions: { durable: true },
       noAck: false,
+      prefetchCount: 1,
     },
   });
 

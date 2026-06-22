@@ -23,6 +23,7 @@ export const RMQ_CLIENT = 'RMQ_CLIENT';
             queue: 'match_producer_queue',
             exchange: config.get<string>('RABBITMQ_EXCHANGE', 'trocas.topic'),
             exchangeType: 'topic',
+            wildcards: true,
             queueOptions: { durable: true },
           },
         }),
