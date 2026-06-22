@@ -69,4 +69,18 @@ export class PublicacoesConsumer {
       channel.ack(originalMsg);
     }
   }
+
+  @EventPattern('match.cancelado')
+  async handleMatchCancelado(
+    @Payload() payload: MatchAceitoPayload,
+    @Ctx() context: RmqContext,
+  ) {
+    const channel = context.getChannelRef() as Channel;
+    const originalMsg = context.getMessage() as Message;
+    try {
+      await this.service.handleMatchEncerrado(payload);
+    } finally {
+      channel.ack(originalMsg);
+    }
+  }
 }

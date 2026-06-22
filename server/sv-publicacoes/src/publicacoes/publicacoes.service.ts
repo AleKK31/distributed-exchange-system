@@ -116,34 +116,16 @@ export class PublicacoesService {
   }
 
   async handleMatchAceito(payload: {
-    usuario_a: string;
-    usuario_b: string;
     publicacao_a_id: string;
     publicacao_b_id: string;
   }) {
-    try {
-      const [pubA, pubB] = await Promise.all([
-        this.repo.findOneBy({ id: payload.publicacao_a_id }),
-        this.repo.findOneBy({ id: payload.publicacao_b_id }),
-      ]);
-
-      if (!pubA || !pubB) {
-        this.logger.error(
-          `[match.aceito] publicação não encontrada: ${JSON.stringify(payload)}`,
-        );
-        return;
-      }
-
-      pubA.status = PublicacaoStatus.TROCADO;
-      pubB.status = PublicacaoStatus.TROCADO;
-      await this.repo.save([pubA, pubB]);
-
-      this.logger.log(
-        `[match.aceito] publicações ${pubA.id} e ${pubB.id} marcadas como trocado`,
-      );
-    } catch (err) {
-      this.logger.error('[match.aceito] erro ao processar evento', err);
-    }
+    await this.setStatusPar(
+      payload.publicacao_a_id,
+      payload.publicacao_b_id,
+      PublicacaoStatus.NEGOCIANDO,
+      PublicacaoStatus.TROCADO,
+      'match.aceito',
+    );
   }
 
   async handleMatchEncontrado(payload: {
@@ -153,6 +135,7 @@ export class PublicacoesService {
     await this.setStatusPar(
       payload.publicacao_a_id,
       payload.publicacao_b_id,
+      PublicacaoStatus.DISPONIVEL,
       PublicacaoStatus.NEGOCIANDO,
       'match.encontrado',
     );
@@ -165,6 +148,7 @@ export class PublicacoesService {
     await this.setStatusPar(
       payload.publicacao_a_id,
       payload.publicacao_b_id,
+      PublicacaoStatus.NEGOCIANDO,
       PublicacaoStatus.DISPONIVEL,
       'match.encerrado',
     );
@@ -173,7 +157,8 @@ export class PublicacoesService {
   private async setStatusPar(
     aId: string,
     bId: string,
-    status: PublicacaoStatus,
+    de: PublicacaoStatus,
+    para: PublicacaoStatus,
     origem: string,
   ) {
     try {
@@ -189,11 +174,21 @@ export class PublicacoesService {
         return;
       }
 
-      pubA.status = status;
-      pubB.status = status;
-      await this.repo.save([pubA, pubB]);
+      const alteradas = [pubA, pubB].filter((pub) => pub.status === de);
 
-      this.logger.log(`[${origem}] ${pubA.id} e ${pubB.id} -> ${status}`);
+      if (!alteradas.length) {
+        this.logger.warn(
+          `[${origem}] nenhuma publicação em ${de} para ${aId} / ${bId}`,
+        );
+        return;
+      }
+
+      for (const pub of alteradas) pub.status = para;
+      await this.repo.save(alteradas);
+
+      this.logger.log(
+        `[${origem}] ${alteradas.map((p) => p.id).join(', ')} ${de} -> ${para}`,
+      );
     } catch (err) {
       this.logger.error(`[${origem}] erro ao processar evento`, err);
     }
