@@ -145,4 +145,57 @@ export class PublicacoesService {
       this.logger.error('[match.aceito] erro ao processar evento', err);
     }
   }
+
+  async handleMatchEncontrado(payload: {
+    publicacao_a_id: string;
+    publicacao_b_id: string;
+  }) {
+    await this.setStatusPar(
+      payload.publicacao_a_id,
+      payload.publicacao_b_id,
+      PublicacaoStatus.NEGOCIANDO,
+      'match.encontrado',
+    );
+  }
+
+  async handleMatchEncerrado(payload: {
+    publicacao_a_id: string;
+    publicacao_b_id: string;
+  }) {
+    await this.setStatusPar(
+      payload.publicacao_a_id,
+      payload.publicacao_b_id,
+      PublicacaoStatus.DISPONIVEL,
+      'match.encerrado',
+    );
+  }
+
+  private async setStatusPar(
+    aId: string,
+    bId: string,
+    status: PublicacaoStatus,
+    origem: string,
+  ) {
+    try {
+      const [pubA, pubB] = await Promise.all([
+        this.repo.findOneBy({ id: aId }),
+        this.repo.findOneBy({ id: bId }),
+      ]);
+
+      if (!pubA || !pubB) {
+        this.logger.error(
+          `[${origem}] publicação não encontrada: ${aId} / ${bId}`,
+        );
+        return;
+      }
+
+      pubA.status = status;
+      pubB.status = status;
+      await this.repo.save([pubA, pubB]);
+
+      this.logger.log(`[${origem}] ${pubA.id} e ${pubB.id} -> ${status}`);
+    } catch (err) {
+      this.logger.error(`[${origem}] erro ao processar evento`, err);
+    }
+  }
 }
