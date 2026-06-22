@@ -1,9 +1,20 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { RMQ_CLIENT } from '../rmq/rmq.client';
-import { Proposta } from './entities/proposta.entity';
+import {
+  Proposta,
+  PropostaStatus,
+  RespostaStatus,
+} from './entities/proposta.entity';
 
 interface PublicacaoCriadaPayload {
   id: string;
@@ -70,6 +81,52 @@ export class MatchService {
     } catch (err) {
       this.logger.error('[publicacao.criada] erro ao processar evento', err);
     }
+  }
+
+  async listarMinhas(userId: string) {
+    return this.repo.find({
+      where: [{ usuario_a_id: userId }, { usuario_b_id: userId }],
+      order: { created_at: 'DESC' },
+    });
+  }
+
+  async buscarParticipante(id: string, userId: string) {
+    const proposta = await this.repo.findOneBy({ id });
+    if (!proposta) throw new NotFoundException('Proposta não encontrada');
+    if (proposta.usuario_a_id !== userId && proposta.usuario_b_id !== userId) {
+      throw new ForbiddenException();
+    }
+    return proposta;
+  }
+
+  async responder(id: string, userId: string, resposta: RespostaStatus) {
+    const proposta = await this.buscarParticipante(id, userId);
+
+    if (proposta.status !== PropostaStatus.PENDENTE) {
+      throw new BadRequestException('Proposta não está mais pendente');
+    }
+
+    if (proposta.usuario_a_id === userId) proposta.resposta_a = resposta;
+    else proposta.resposta_b = resposta;
+
+    if (resposta === RespostaStatus.RECUSADO) {
+      proposta.status = PropostaStatus.RECUSADO;
+      const saved = await this.repo.save(proposta);
+      this.rmqClient.emit('match.recusado', this.toEventPayload(saved));
+      return saved;
+    }
+
+    if (
+      proposta.resposta_a === RespostaStatus.ACEITO &&
+      proposta.resposta_b === RespostaStatus.ACEITO
+    ) {
+      proposta.status = PropostaStatus.ACEITO;
+      const saved = await this.repo.save(proposta);
+      this.rmqClient.emit('match.aceito', this.toEventPayload(saved));
+      return saved;
+    }
+
+    return this.repo.save(proposta);
   }
 
   private toEventPayload(p: Proposta) {
