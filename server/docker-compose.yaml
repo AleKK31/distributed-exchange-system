@@ -104,6 +104,7 @@ services:
             - DATABASE_USER=admin
             - DATABASE_PASSWORD=admin
             - DATABASE_NAME=exchange_db
+            - JWT_SECRET=troca_secret
             - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
         depends_on:
             - postgres
