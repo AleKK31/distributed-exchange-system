@@ -99,8 +99,14 @@ services:
         ports:
             - "3004:3000"
         environment:
+            - DATABASE_HOST=postgres
+            - DATABASE_PORT=5432
+            - DATABASE_USER=admin
+            - DATABASE_PASSWORD=admin
+            - DATABASE_NAME=exchange_db
             - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
         depends_on:
+            - postgres
             - rabbitmq
         networks:
             - exchange-network
