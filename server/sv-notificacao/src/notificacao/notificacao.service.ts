@@ -33,11 +33,11 @@ export class NotificacaoService {
     try {
       const pubs = await this.dataSource.query<
         { id: string; item_oferto: string }[]
-      >(`SELECT id, item_oferto FROM publicacoes WHERE id = ANY($1)`, [
+      >(`SELECT id, item_oferto FROM publicacoes WHERE id = ANY($1::uuid[])`, [
         [payload.publicacao_a_id, payload.publicacao_b_id],
       ]);
       const users = await this.dataSource.query<{ id: string; name: string }[]>(
-        `SELECT id, name FROM users WHERE id = ANY($1)`,
+        `SELECT id, name FROM users WHERE id = ANY($1::uuid[])`,
         [[payload.usuario_a, payload.usuario_b]],
       );
 
