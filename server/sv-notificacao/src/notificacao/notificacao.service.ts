@@ -72,6 +72,13 @@ export class NotificacaoService {
     }
   }
 
+  async naoLidas(userId: string) {
+    return this.repo.find({
+      where: { usuario_id: userId, lida: false },
+      order: { created_at: 'ASC' },
+    });
+  }
+
   private montarMensagem(
     tipo: TipoNotificacao,
     meuItem?: string,
