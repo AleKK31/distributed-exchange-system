@@ -110,13 +110,13 @@ export class NotificacaoService {
     const nome = nomeDele ?? 'outro usuário';
     switch (tipo) {
       case TipoNotificacao.ENCONTRADO:
-        return `Novo match: ${meu} pelo ${dele} de ${nome}.`;
+        return `Novo match: "${meu}" por "${dele}" de ${nome}.`;
       case TipoNotificacao.ACEITO:
-        return `Troca confirmada: ${meu} por ${dele} com ${nome}.`;
+        return `Troca confirmada: "${meu}" por "${dele}" com ${nome}.`;
       case TipoNotificacao.RECUSADO:
-        return `Proposta recusada: ${meu} por ${dele}.`;
+        return `Proposta recusada: "${meu}" por "${dele}".`;
       case TipoNotificacao.EXPIRADO:
-        return `Proposta expirada: ${meu} por ${dele}.`;
+        return `Proposta expirada: "${meu}" por "${dele}".`;
       case TipoNotificacao.CANCELADO:
         return `Troca cancelada: a publicação envolvida foi removida.`;
       default:
