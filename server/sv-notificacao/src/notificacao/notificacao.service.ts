@@ -1,4 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Notificacao, TipoNotificacao } from './entities/notificacao.entity';
@@ -70,6 +75,21 @@ export class NotificacaoService {
       this.logger.error(`[${tipo}] erro ao criar notificações`, err);
       return [];
     }
+  }
+
+  async listarMinhas(userId: string) {
+    return this.repo.find({
+      where: { usuario_id: userId },
+      order: { created_at: 'DESC' },
+    });
+  }
+
+  async marcarLida(id: string, userId: string) {
+    const notificacao = await this.repo.findOneBy({ id });
+    if (!notificacao) throw new NotFoundException('Notificação não encontrada');
+    if (notificacao.usuario_id !== userId) throw new ForbiddenException();
+    notificacao.lida = true;
+    return this.repo.save(notificacao);
   }
 
   async naoLidas(userId: string) {
