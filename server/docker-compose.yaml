@@ -24,6 +24,7 @@ services:
             - DATABASE_PASSWORD=admin
             - DATABASE_NAME=exchange_db
             - JWT_SECRET=troca_secret
+            - PORT=3000
             - JWT_EXPIRATION=3600
         depends_on:
             - postgres
@@ -51,6 +52,7 @@ services:
             - DATABASE_PASSWORD=admin
             - DATABASE_NAME=exchange_db
             - JWT_SECRET=troca_secret
+            - PORT=3000
             - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
         depends_on:
             - postgres
@@ -79,6 +81,7 @@ services:
             - DATABASE_PASSWORD=admin
             - DATABASE_NAME=exchange_db
             - JWT_SECRET=troca_secret
+            - PORT=3000
             - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
         depends_on:
             - postgres
@@ -107,6 +110,7 @@ services:
             - DATABASE_PASSWORD=admin
             - DATABASE_NAME=exchange_db
             - JWT_SECRET=troca_secret
+            - PORT=3000
             - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
         depends_on:
             - postgres
