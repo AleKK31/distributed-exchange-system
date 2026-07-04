@@ -16,3 +16,11 @@ export async function apiFetch(path, options = {}) {
 
   return res.json()
 }
+
+export async function listarNotificacoes() {
+  return apiFetch('/notificacoes')
+}
+
+export async function marcarNotificacaoLida(id) {
+  return apiFetch(`/notificacoes/${id}/lida`, { method: 'PATCH' })
+}

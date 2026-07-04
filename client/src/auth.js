@@ -7,11 +7,13 @@ export function getToken() {
 
 export function setToken(token) {
   localStorage.setItem(TOKEN_KEY, token)
+  window.dispatchEvent(new Event('auth-changed'))
 }
 
 export function clearToken() {
   localStorage.removeItem(TOKEN_KEY)
   localStorage.removeItem(USER_KEY)
+  window.dispatchEvent(new Event('auth-changed'))
 }
 
 export function isLoggedIn() {
