@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { clearToken, getUser, isLoggedIn } from '../auth'
+import NotificationBell from './NotificationBell'
 
 export default function Navbar() {
   const navigate = useNavigate()
@@ -32,6 +33,7 @@ export default function Navbar() {
               <NavLink to="/propostas" className={({ isActive }) => isActive ? active : link}>
                 Propostas
               </NavLink>
+              <NotificationBell />
               <span className="opacity-80 hidden sm:inline">{user?.name}</span>
               <button onClick={handleLogout} className="hover:underline cursor-pointer">
                 Sair
