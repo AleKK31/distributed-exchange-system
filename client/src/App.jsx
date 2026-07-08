@@ -1,3 +1,11 @@
+/**
+ * Componente raiz da aplicação. Define o layout base (navbar + toasts), envolve
+ * tudo no provider de notificações e declara as rotas das páginas.
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 23/06/2026
+ * Atualização: 07/07/2026
+ */
 import { Route, Routes } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Toast from './components/Toast'
@@ -9,6 +17,10 @@ import Propostas from './pages/Propostas'
 import PublicacaoDetalhe from './pages/PublicacaoDetalhe'
 import Register from './pages/Register'
 
+/**
+ * Monta a estrutura da aplicação e o mapeamento de rotas.
+ * @returns {JSX.Element} Árvore de componentes da aplicação.
+ */
 export default function App() {
   return (
     <NotificacoesProvider>

@@ -1,3 +1,11 @@
+/**
+ * Módulo de usuários: registra a entidade User, o controller e o service, e
+ * importa o módulo de autenticação.
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 20/06/2026
+ * Atualização: 07/07/2026
+ */
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';

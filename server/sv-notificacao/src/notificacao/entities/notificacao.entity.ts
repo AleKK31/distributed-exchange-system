@@ -1,3 +1,12 @@
+/**
+ * Entidade Notificacao (tabela notificacoes) e enum de tipo. Representa uma
+ * notificação persistida por destinatário, com o tipo (evento match.* de
+ * origem), a mensagem, o vínculo ao match/publicações e o flag de leitura.
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 23/06/2026
+ * Atualização: 07/07/2026
+ */
 import {
   Column,
   CreateDateColumn,

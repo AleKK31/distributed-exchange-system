@@ -1,3 +1,12 @@
+/**
+ * Consumidor AMQP do sv-match. Escuta os eventos publicacao.* no RabbitMQ e
+ * delega ao service a busca de pares e o cancelamento de propostas,
+ * confirmando (ack manual) cada mensagem processada.
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 21/06/2026
+ * Atualização: 07/07/2026
+ */
 import { Controller } from '@nestjs/common';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 import { Channel, Message } from 'amqplib';
@@ -21,6 +30,12 @@ interface PublicacaoRemovidaPayload {
 export class MatchConsumer {
   constructor(private readonly service: MatchService) {}
 
+  /**
+   * Trata publicacao.criada, disparando a busca por par compatível.
+   * @param payload Dados da publicação criada.
+   * @param context Contexto RMQ para ack manual.
+   * @returns Promise resolvida após processar e confirmar a mensagem.
+   */
   @EventPattern('publicacao.criada')
   async handlePublicacaoCriada(
     @Payload() payload: PublicacaoEventPayload,
@@ -35,6 +50,12 @@ export class MatchConsumer {
     }
   }
 
+  /**
+   * Trata publicacao.atualizada, refazendo a busca por par compatível.
+   * @param payload Dados da publicação atualizada.
+   * @param context Contexto RMQ para ack manual.
+   * @returns Promise resolvida após processar e confirmar a mensagem.
+   */
   @EventPattern('publicacao.atualizada')
   async handlePublicacaoAtualizada(
     @Payload() payload: PublicacaoEventPayload,
@@ -49,6 +70,12 @@ export class MatchConsumer {
     }
   }
 
+  /**
+   * Trata publicacao.removida, cancelando a proposta pendente da publicação.
+   * @param payload Identificação da publicação removida.
+   * @param context Contexto RMQ para ack manual.
+   * @returns Promise resolvida após processar e confirmar a mensagem.
+   */
   @EventPattern('publicacao.removida')
   async handlePublicacaoRemovida(
     @Payload() payload: PublicacaoRemovidaPayload,

@@ -1,3 +1,11 @@
+/**
+ * Módulo do cliente RabbitMQ (produtor). Registra o ClientProxy (token
+ * RMQ_CLIENT) usado para emitir os eventos match.* na exchange topic.
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 21/06/2026
+ * Atualização: 07/07/2026
+ */
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';

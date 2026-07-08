@@ -1,3 +1,12 @@
+/**
+ * Entidade Proposta (tabela propostas) e enums de resposta/status. Representa
+ * uma proposta de troca entre duas publicações, guardando a resposta de cada
+ * usuário e o status geral (pendente/aceito/recusado/expirado/cancelado).
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 21/06/2026
+ * Atualização: 07/07/2026
+ */
 import {
   Column,
   CreateDateColumn,

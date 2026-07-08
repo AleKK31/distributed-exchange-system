@@ -1,3 +1,11 @@
+/**
+ * Toasts de notificação. Observa a última nova notificação do contexto e exibe
+ * um aviso temporário (auto-fecha após 4s), com cor conforme o tipo do evento.
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 04/07/2026
+ * Atualização: 07/07/2026
+ */
 import { useEffect, useState } from 'react'
 import { useNotificacoes } from '../context/NotificacoesContext'
 
@@ -9,6 +17,10 @@ const tipoConfig = {
   'match.cancelado': 'bg-red-500',
 }
 
+/**
+ * Renderiza a pilha de toasts no canto inferior direito.
+ * @returns {JSX.Element|null} Elemento com os toasts, ou null se não houver.
+ */
 export default function Toast() {
   const { novaNotificacao } = useNotificacoes()
   const [toasts, setToasts] = useState([])

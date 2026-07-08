@@ -1,6 +1,19 @@
+/**
+ * Sino de notificações da navbar. Mostra o contador de não lidas e, ao clicar,
+ * abre um dropdown com a lista; clicar numa notificação a marca como lida.
+ * Fecha ao clicar fora.
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 04/07/2026
+ * Atualização: 07/07/2026
+ */
 import { useEffect, useRef, useState } from 'react'
 import { useNotificacoes } from '../context/NotificacoesContext'
 
+/**
+ * Renderiza o sino de notificações com o dropdown.
+ * @returns {JSX.Element} Elemento do sino de notificações.
+ */
 export default function NotificationBell() {
   const { notificacoes, naoLidasCount, marcarLida } = useNotificacoes()
   const [aberto, setAberto] = useState(false)
@@ -19,6 +32,7 @@ export default function NotificationBell() {
     return () => document.removeEventListener('mousedown', handleClickFora)
   }, [aberto])
 
+  // Marca a notificação como lida, ignorando eventual erro de rede.
   function handleMarcarLida(id) {
     marcarLida(id).catch(() => {})
   }

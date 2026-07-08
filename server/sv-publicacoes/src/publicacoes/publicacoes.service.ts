@@ -1,3 +1,12 @@
+/**
+ * Serviço de negócio de publicações. Faz o CRUD de itens para troca, emite os
+ * eventos publicacao.* no RabbitMQ e reage aos eventos match.* atualizando o
+ * status das publicações (disponivel/negociando/trocado/removido).
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 20/06/2026
+ * Atualização: 07/07/2026
+ */
 import {
   BadRequestException,
   ForbiddenException,
@@ -26,6 +35,12 @@ export class PublicacoesService {
     private readonly rmqClient: ClientProxy,
   ) {}
 
+  /**
+   * Cria uma publicação disponível e emite publicacao.criada.
+   * @param dto Dados do item ofertado/desejado, categoria e descrição.
+   * @param usuarioId Id do dono da publicação.
+   * @returns A publicação criada.
+   */
   async create(dto: CreatePublicacaoDto, usuarioId: string) {
     const pub = this.repo.create({
       ...dto,
@@ -46,6 +61,11 @@ export class PublicacoesService {
     return saved;
   }
 
+  /**
+   * Lista publicações com filtros de categoria/status e paginação.
+   * @param query Filtros e paginação (categoria, status, page, limit).
+   * @returns Objeto com data (lista) e meta (page, limit, total).
+   */
   async findAll(query: ListPublicacoesDto) {
     const { categoria, status = 'disponivel', page = 1, limit = 20 } = query;
 
@@ -62,12 +82,23 @@ export class PublicacoesService {
     return { data, meta: { page, limit, total } };
   }
 
+  /**
+   * Busca uma publicação pelo id.
+   * @param id Id da publicação.
+   * @returns A publicação encontrada.
+   * @throws NotFoundException se a publicação não existir.
+   */
   async findOne(id: string) {
     const pub = await this.repo.findOneBy({ id });
     if (!pub) throw new NotFoundException('Publicação não encontrada');
     return pub;
   }
 
+  /**
+   * Lista as publicações de um usuário, das mais recentes às antigas.
+   * @param usuarioId Id do dono das publicações.
+   * @returns Lista de publicações do usuário.
+   */
   async findByUsuario(usuarioId: string) {
     return this.repo.find({
       where: { usuario_id: usuarioId },
@@ -75,6 +106,16 @@ export class PublicacoesService {
     });
   }
 
+  /**
+   * Atualiza uma publicação (apenas o dono, só quando disponível) e emite
+   * publicacao.atualizada.
+   * @param id Id da publicação.
+   * @param dto Campos a atualizar.
+   * @param usuarioId Id do usuário autenticado.
+   * @returns A publicação atualizada.
+   * @throws ForbiddenException se o usuário não for o dono.
+   * @throws BadRequestException se a publicação não estiver disponível.
+   */
   async update(id: string, dto: UpdatePublicacaoDto, usuarioId: string) {
     const pub = await this.findOne(id);
 
@@ -101,6 +142,14 @@ export class PublicacoesService {
     return saved;
   }
 
+  /**
+   * Remove (soft delete) uma publicação, marcando-a como removida e emitindo
+   * publicacao.removida.
+   * @param id Id da publicação.
+   * @param usuarioId Id do usuário autenticado.
+   * @returns Promise resolvida após a remoção.
+   * @throws ForbiddenException se o usuário não for o dono.
+   */
   async remove(id: string, usuarioId: string) {
     const pub = await this.findOne(id);
 
@@ -115,6 +164,11 @@ export class PublicacoesService {
     });
   }
 
+  /**
+   * Reage a match.aceito: move o par de negociando para trocado.
+   * @param payload Ids das duas publicações do par.
+   * @returns Promise resolvida após atualizar o status.
+   */
   async handleMatchAceito(payload: {
     publicacao_a_id: string;
     publicacao_b_id: string;
@@ -128,6 +182,11 @@ export class PublicacoesService {
     );
   }
 
+  /**
+   * Reage a match.encontrado: move o par de disponivel para negociando.
+   * @param payload Ids das duas publicações do par.
+   * @returns Promise resolvida após atualizar o status.
+   */
   async handleMatchEncontrado(payload: {
     publicacao_a_id: string;
     publicacao_b_id: string;
@@ -141,6 +200,12 @@ export class PublicacoesService {
     );
   }
 
+  /**
+   * Reage aos encerramentos (match.recusado/expirado/cancelado): devolve o par
+   * de negociando para disponivel.
+   * @param payload Ids das duas publicações do par.
+   * @returns Promise resolvida após atualizar o status.
+   */
   async handleMatchEncerrado(payload: {
     publicacao_a_id: string;
     publicacao_b_id: string;
@@ -154,6 +219,16 @@ export class PublicacoesService {
     );
   }
 
+  /**
+   * Transição de status compartilhada pelos handlers de match: para cada
+   * publicação do par que estiver no status 'de', altera para o status 'para'.
+   * @param aId Id da primeira publicação.
+   * @param bId Id da segunda publicação.
+   * @param de Status esperado antes da transição.
+   * @param para Novo status a aplicar.
+   * @param origem Chave do evento de origem, usada nos logs.
+   * @returns Promise resolvida após processar a transição.
+   */
   private async setStatusPar(
     aId: string,
     bId: string,

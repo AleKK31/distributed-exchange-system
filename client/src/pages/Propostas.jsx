@@ -1,3 +1,11 @@
+/**
+ * Página de propostas. Lista as propostas de troca do usuário, carrega os itens
+ * das publicações envolvidas e permite aceitar ou recusar quando pendente.
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 23/06/2026
+ * Atualização: 07/07/2026
+ */
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiFetch } from '../api'
@@ -17,6 +25,10 @@ const respostaConfig = {
   recusado:  { label: 'Você recusou',            cls: 'text-red-500' },
 }
 
+/**
+ * Renderiza a página de propostas de troca do usuário.
+ * @returns {JSX.Element} Página de propostas.
+ */
 export default function Propostas() {
   const navigate = useNavigate()
   const user     = getUser()
@@ -32,6 +44,7 @@ export default function Propostas() {
     carregar()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Carrega as propostas do usuário e as publicações relacionadas.
   async function carregar() {
     setLoading(true)
     setError('')
@@ -47,6 +60,7 @@ export default function Propostas() {
     }
   }
 
+  // Busca em paralelo as publicações citadas nas propostas e as indexa por id.
   async function carregarPublicacoes(lista) {
     const ids = [...new Set(lista.flatMap((p) => [p.publicacao_a_id, p.publicacao_b_id]))]
     const resultados = await Promise.allSettled(ids.map((id) => apiFetch(`/publicacoes/${id}`)))
@@ -57,6 +71,7 @@ export default function Propostas() {
     setPubs(mapa)
   }
 
+  // Envia a resposta (aceitar/recusar) à proposta e atualiza a lista.
   async function responder(id, acao) {
     setRespondendo(id)
     try {

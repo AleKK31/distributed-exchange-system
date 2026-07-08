@@ -1,3 +1,11 @@
+/**
+ * Módulo de notificação: registra a entidade, o consumidor AMQP, o controller
+ * HTTP, o service e o gateway WebSocket, importando o módulo de autenticação.
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 23/06/2026
+ * Atualização: 07/07/2026
+ */
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';

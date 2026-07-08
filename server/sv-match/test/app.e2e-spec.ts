@@ -1,3 +1,11 @@
+/**
+ * Teste end-to-end do sv-match (scaffold padrão do NestJS). Sobe a aplicação a
+ * partir do AppModule e exercita uma rota HTTP básica.
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 20/06/2026
+ * Atualização: 07/07/2026
+ */
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';

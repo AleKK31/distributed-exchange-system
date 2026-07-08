@@ -1,3 +1,11 @@
+/**
+ * Página de detalhe de uma publicação. Carrega a publicação e o dono a partir
+ * do id da URL, com estados de carregamento e de não encontrada.
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 23/06/2026
+ * Atualização: 07/07/2026
+ */
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { apiFetch } from '../api'
@@ -9,6 +17,10 @@ const statusConfig = {
   removido:   { label: 'Removido',    cls: 'bg-red-100 text-red-400' },
 }
 
+/**
+ * Renderiza o detalhe de uma publicação.
+ * @returns {JSX.Element} Página de detalhe da publicação.
+ */
 export default function PublicacaoDetalhe() {
   const { id } = useParams()
 

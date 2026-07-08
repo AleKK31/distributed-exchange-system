@@ -1,3 +1,13 @@
+/**
+ * Serviço de negócio de notificações. A partir dos eventos match.*, cria uma
+ * notificação por destinatário (mensagem personalizada por usuário, lendo nome
+ * e item das tabelas users/publicacoes), persiste-as e expõe consulta e
+ * marcação de leitura.
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 23/06/2026
+ * Atualização: 07/07/2026
+ */
 import {
   ForbiddenException,
   Injectable,
@@ -26,6 +36,13 @@ export class NotificacaoService {
     private readonly dataSource: DataSource,
   ) {}
 
+  /**
+   * Cria e persiste as notificações de um evento de match: uma para cada
+   * usuário do par, com mensagem invertida (o item de cada um em primeiro).
+   * @param tipo Tipo da notificação (correspondente ao evento match.*).
+   * @param payload Dados do match (ids de usuários e publicações).
+   * @returns As notificações salvas (ou lista vazia em caso de erro).
+   */
   async criarParaMatch(
     tipo: TipoNotificacao,
     payload: MatchEventPayload,
@@ -77,6 +94,11 @@ export class NotificacaoService {
     }
   }
 
+  /**
+   * Lista as notificações do usuário, das mais recentes às antigas.
+   * @param userId Id do usuário autenticado.
+   * @returns Lista de notificações do usuário.
+   */
   async listarMinhas(userId: string) {
     return this.repo.find({
       where: { usuario_id: userId },
@@ -84,6 +106,14 @@ export class NotificacaoService {
     });
   }
 
+  /**
+   * Marca uma notificação do usuário como lida.
+   * @param id Id da notificação.
+   * @param userId Id do usuário autenticado.
+   * @returns A notificação atualizada.
+   * @throws NotFoundException se a notificação não existir.
+   * @throws ForbiddenException se a notificação não for do usuário.
+   */
   async marcarLida(id: string, userId: string) {
     const notificacao = await this.repo.findOneBy({ id });
     if (!notificacao) throw new NotFoundException('Notificação não encontrada');
@@ -92,6 +122,12 @@ export class NotificacaoService {
     return this.repo.save(notificacao);
   }
 
+  /**
+   * Lista as notificações não lidas do usuário, das mais antigas às recentes
+   * (usada no replay ao conectar o WebSocket).
+   * @param userId Id do usuário autenticado.
+   * @returns Lista de notificações não lidas.
+   */
   async naoLidas(userId: string) {
     return this.repo.find({
       where: { usuario_id: userId, lida: false },
@@ -99,6 +135,15 @@ export class NotificacaoService {
     });
   }
 
+  /**
+   * Monta a mensagem de uma notificação conforme o tipo, na perspectiva do
+   * destinatário (com fallbacks quando item/nome não são encontrados).
+   * @param tipo Tipo da notificação.
+   * @param meuItem Item do próprio destinatário.
+   * @param itemDele Item do outro usuário.
+   * @param nomeDele Nome do outro usuário.
+   * @returns Texto da mensagem.
+   */
   private montarMensagem(
     tipo: TipoNotificacao,
     meuItem?: string,

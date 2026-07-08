@@ -1,3 +1,11 @@
+/*
+ * Folha de estilos global. Importa as camadas base, components e utilities do
+ * Tailwind CSS, que fornecem os estilos utilizados nas classes dos componentes.
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 23/06/2026
+ * Atualização: 07/07/2026
+ */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

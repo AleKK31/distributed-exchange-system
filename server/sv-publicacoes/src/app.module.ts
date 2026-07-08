@@ -1,3 +1,11 @@
+/**
+ * Módulo raiz do sv-publicacoes. Configura o acesso ao PostgreSQL via TypeORM
+ * (com synchronize) e agrega o módulo de publicações.
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 20/06/2026
+ * Atualização: 07/07/2026
+ */
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';

@@ -1,8 +1,20 @@
+/**
+ * Página de cadastro. Registra um novo usuário via API e redireciona para o
+ * login; já redireciona para a Home se houver sessão ativa.
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 23/06/2026
+ * Atualização: 07/07/2026
+ */
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { apiFetch } from '../api'
 import { isLoggedIn } from '../auth'
 
+/**
+ * Renderiza o formulário de cadastro.
+ * @returns {JSX.Element} Página de cadastro.
+ */
 export default function Register() {
   const navigate = useNavigate()
   const [form, setForm] = useState({ name: '', email: '', password: '' })
@@ -13,10 +25,12 @@ export default function Register() {
     if (isLoggedIn()) navigate('/')
   }, [navigate])
 
+  // Atualiza o campo do formulário conforme o input alterado.
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
+  // Cadastra o usuário e vai para o login; trata e-mail já cadastrado.
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')

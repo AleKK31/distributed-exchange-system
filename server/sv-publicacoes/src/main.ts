@@ -1,9 +1,23 @@
+/**
+ * Ponto de entrada do sv-publicacoes. Cria a aplicação NestJS, conecta o
+ * microsserviço RabbitMQ (consumo de eventos match.*), habilita a validação
+ * global de DTOs e publica a documentação Swagger em /docs.
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 20/06/2026
+ * Atualização: 07/07/2026
+ */
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
+/**
+ * Inicializa a aplicação HTTP e o microsserviço AMQP, e sobe o servidor na
+ * porta configurada.
+ * @returns Promise resolvida quando o servidor está ouvindo.
+ */
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 

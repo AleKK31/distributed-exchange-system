@@ -1,3 +1,11 @@
+/**
+ * DTO de cadastro de usuário. Define e valida nome, e-mail e senha recebidos
+ * no corpo da requisição de registro.
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 20/06/2026
+ * Atualização: 07/07/2026
+ */
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsString, MinLength } from 'class-validator';
 

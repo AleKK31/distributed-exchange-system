@@ -1,3 +1,12 @@
+/**
+ * Entidade Publicacao (tabela publicacoes) e enum de status. Representa um item
+ * anunciado para troca (oferto/desejado, categoria, descrição) e seu status no
+ * ciclo de troca (disponivel/negociando/trocado/removido).
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 20/06/2026
+ * Atualização: 07/07/2026
+ */
 import {
   Column,
   CreateDateColumn,

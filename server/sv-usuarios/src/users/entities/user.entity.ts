@@ -1,3 +1,11 @@
+/**
+ * Entidade User (tabela users). Representa um usuário do sistema com nome,
+ * e-mail único, senha com hash e carimbos de criação/atualização.
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 20/06/2026
+ * Atualização: 07/07/2026
+ */
 import {
   Column,
   CreateDateColumn,

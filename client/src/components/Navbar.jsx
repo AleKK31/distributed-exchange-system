@@ -1,12 +1,25 @@
+/**
+ * Barra de navegação. Mostra os links conforme o estado de login (área pública
+ * vs. autenticada), o sino de notificações, o nome do usuário e o botão de sair.
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 23/06/2026
+ * Atualização: 07/07/2026
+ */
 import { NavLink, useNavigate } from 'react-router-dom'
 import { clearToken, getUser, isLoggedIn } from '../auth'
 import NotificationBell from './NotificationBell'
 
+/**
+ * Renderiza a barra de navegação superior.
+ * @returns {JSX.Element} Elemento da navbar.
+ */
 export default function Navbar() {
   const navigate = useNavigate()
   const loggedIn = isLoggedIn()
   const user = getUser()
 
+  // Faz logout (limpa o token) e volta para a Home.
   function handleLogout() {
     clearToken()
     navigate('/')

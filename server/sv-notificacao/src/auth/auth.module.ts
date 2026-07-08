@@ -1,3 +1,12 @@
+/**
+ * Módulo de autenticação. Configura o JwtModule (segredo e expiração) e a
+ * estratégia JWT do Passport, exportando o JwtModule (usado também na
+ * autenticação do WebSocket).
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 23/06/2026
+ * Atualização: 07/07/2026
+ */
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';

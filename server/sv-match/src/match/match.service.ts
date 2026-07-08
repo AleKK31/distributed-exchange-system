@@ -1,3 +1,13 @@
+/**
+ * Serviço de negócio do sv-match. Procura pares compatíveis entre publicações,
+ * cria e resolve propostas de troca e emite os eventos match.* no RabbitMQ
+ * (encontrado, aceito, recusado, cancelado, expirado). Lê a tabela publicacoes
+ * diretamente do banco compartilhado para encontrar candidatos.
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 21/06/2026
+ * Atualização: 07/07/2026
+ */
 import {
   BadRequestException,
   ForbiddenException,
@@ -46,14 +56,31 @@ export class MatchService {
     private readonly expiracaoService: ExpiracaoService,
   ) {}
 
+  /**
+   * Trata o evento publicacao.criada disparando a busca por um par compatível.
+   * @param payload Dados da publicação recém-criada.
+   * @returns Promise resolvida após a tentativa de match.
+   */
   async handlePublicacaoCriada(payload: PublicacaoEventPayload) {
     await this.procurarPar(payload, 'publicacao.criada');
   }
 
+  /**
+   * Trata o evento publicacao.atualizada refazendo a busca por par compatível.
+   * @param payload Dados da publicação atualizada.
+   * @returns Promise resolvida após a tentativa de match.
+   */
   async handlePublicacaoAtualizada(payload: PublicacaoEventPayload) {
     await this.procurarPar(payload, 'publicacao.atualizada');
   }
 
+  /**
+   * Trata o evento publicacao.removida: cancela a proposta pendente que envolvia
+   * a publicação e emite match.cancelado.
+   * @param payload Identificação da publicação removida.
+   * @returns Promise resolvida após processar o cancelamento (ou sem efeito se
+   *   não houver proposta pendente).
+   */
   async handlePublicacaoRemovida(payload: PublicacaoRemovidaPayload) {
     try {
       const proposta = await this.repo.findOne({
@@ -83,6 +110,15 @@ export class MatchService {
     }
   }
 
+  /**
+   * Relê a publicação no banco, verifica se está disponível e sem proposta
+   * pendente, procura uma publicação compatível (item_oferto/item_desejado
+   * cruzados) e, ao achar, cria a proposta, emite match.encontrado e agenda a
+   * expiração.
+   * @param payload Dados da publicação de origem (usa apenas o id).
+   * @param origem Chave do evento que originou a busca, usada nos logs.
+   * @returns Promise resolvida após a tentativa de match.
+   */
   private async procurarPar(payload: PublicacaoEventPayload, origem: string) {
     try {
       const origens = await this.dataSource.query<
@@ -165,6 +201,11 @@ export class MatchService {
     }
   }
 
+  /**
+   * Lista as propostas em que o usuário participa, das mais recentes às antigas.
+   * @param userId Id do usuário autenticado.
+   * @returns Lista de propostas (Proposta[]) do usuário.
+   */
   async listarMinhas(userId: string) {
     return this.repo.find({
       where: [{ usuario_a_id: userId }, { usuario_b_id: userId }],
@@ -172,6 +213,14 @@ export class MatchService {
     });
   }
 
+  /**
+   * Busca uma proposta garantindo que o usuário seja um dos participantes.
+   * @param id Id da proposta.
+   * @param userId Id do usuário autenticado.
+   * @returns A proposta encontrada.
+   * @throws NotFoundException se a proposta não existir.
+   * @throws ForbiddenException se o usuário não participar da proposta.
+   */
   async buscarParticipante(id: string, userId: string) {
     const proposta = await this.repo.findOneBy({ id });
     if (!proposta) throw new NotFoundException('Proposta não encontrada');
@@ -181,6 +230,16 @@ export class MatchService {
     return proposta;
   }
 
+  /**
+   * Registra a resposta (aceite/recusa) de um participante. Recusa encerra a
+   * proposta e emite match.recusado; aceite dos dois lados encerra e emite
+   * match.aceito; aceite de apenas um lado mantém a proposta pendente.
+   * @param id Id da proposta.
+   * @param userId Id do usuário autenticado que está respondendo.
+   * @param resposta Resposta do usuário (ACEITO ou RECUSADO).
+   * @returns A proposta atualizada.
+   * @throws BadRequestException se a proposta não estiver mais pendente.
+   */
   async responder(id: string, userId: string, resposta: RespostaStatus) {
     const proposta = await this.buscarParticipante(id, userId);
 
@@ -211,6 +270,13 @@ export class MatchService {
     return this.repo.save(proposta);
   }
 
+  /**
+   * Expira a proposta se ela ainda estiver pendente, emitindo match.expirado.
+   * Chamada pelo consumidor da fila de expiração (TTL/DLX).
+   * @param matchId Id da proposta a expirar.
+   * @returns Promise resolvida após processar (sem efeito se a proposta não
+   *   existir ou já não estiver pendente).
+   */
   async expirarSePendente(matchId: string) {
     const proposta = await this.repo.findOneBy({ id: matchId });
     if (!proposta) return;
@@ -222,6 +288,12 @@ export class MatchService {
     this.logger.log(`[match.expirado] proposta ${saved.id} expirada`);
   }
 
+  /**
+   * Monta o payload padrão dos eventos match.* a partir de uma proposta.
+   * @param p Proposta de origem.
+   * @returns Objeto com match_id, usuario_a, usuario_b, publicacao_a_id e
+   *   publicacao_b_id.
+   */
   private toEventPayload(p: Proposta) {
     return {
       match_id: p.id,

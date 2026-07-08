@@ -1,3 +1,11 @@
+/**
+ * Página "Minhas publicações". Lista as publicações do usuário e permite criar,
+ * editar (via modal) e remover (com confirmação) itens para troca.
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 23/06/2026
+ * Atualização: 07/07/2026
+ */
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiFetch } from '../api'
@@ -14,6 +22,10 @@ const statusBadge = {
   removido:   'bg-red-100 text-red-400',
 }
 
+/**
+ * Renderiza a página de gestão das publicações do usuário.
+ * @returns {JSX.Element} Página "Minhas publicações".
+ */
 export default function MinhasPublicacoes() {
   const navigate  = useNavigate()
   const user      = getUser()
@@ -37,6 +49,7 @@ export default function MinhasPublicacoes() {
     carregar()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Carrega as publicações do usuário autenticado.
   async function carregar() {
     setLoading(true)
     setError('')
@@ -50,6 +63,7 @@ export default function MinhasPublicacoes() {
     }
   }
 
+  // Abre o modal em modo de criação (formulário vazio).
   function abrirCriacao() {
     setEditando(null)
     setForm(EMPTY_FORM)
@@ -57,6 +71,7 @@ export default function MinhasPublicacoes() {
     setShowForm(true)
   }
 
+  // Abre o modal em modo de edição, pré-preenchendo com a publicação.
   function abrirEdicao(pub) {
     setEditando(pub)
     setForm({
@@ -69,16 +84,19 @@ export default function MinhasPublicacoes() {
     setShowForm(true)
   }
 
+  // Fecha o modal e reseta o formulário.
   function fecharForm() {
     setShowForm(false)
     setEditando(null)
     setForm(EMPTY_FORM)
   }
 
+  // Atualiza o campo do formulário conforme o input alterado.
   function handleChange(e) {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }))
   }
 
+  // Cria ou atualiza a publicação (conforme o modo) e sincroniza a lista.
   async function handleSalvar(e) {
     e.preventDefault()
     setSaving(true)
@@ -110,6 +128,7 @@ export default function MinhasPublicacoes() {
     }
   }
 
+  // Remove a publicação (soft delete) e a retira da lista.
   async function handleRemover(id) {
     try {
       await apiFetch(`/publicacoes/${id}`, { method: 'DELETE' })

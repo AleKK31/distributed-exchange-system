@@ -1,3 +1,13 @@
+/**
+ * Contexto React de notificações. Carrega o histórico via API, mantém a conexão
+ * WebSocket (socket.io) autenticada por JWT, recebe notificações em tempo real
+ * e expõe a lista, a contagem de não lidas, a última nova notificação e a ação
+ * de marcar como lida. Reage ao evento 'auth-changed' para conectar/desconectar.
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 04/07/2026
+ * Atualização: 07/07/2026
+ */
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { io } from 'socket.io-client'
 import { listarNotificacoes, marcarNotificacaoLida } from '../api'
@@ -5,6 +15,12 @@ import { getToken, isLoggedIn } from '../auth'
 
 const NotificacoesContext = createContext(null)
 
+/**
+ * Provider que disponibiliza o estado e as ações de notificações à árvore.
+ * @param {object} props Propriedades do componente.
+ * @param {React.ReactNode} props.children Elementos filhos que consomem o contexto.
+ * @returns {JSX.Element} Provider do contexto de notificações.
+ */
 export function NotificacoesProvider({ children }) {
   const [notificacoes, setNotificacoes] = useState([])
   const [novaNotificacao, setNovaNotificacao] = useState(null)
@@ -22,6 +38,7 @@ export function NotificacoesProvider({ children }) {
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Conecta ou desconecta o socket conforme o estado de login mudou.
   function handleAuthChanged() {
     if (isLoggedIn()) {
       conectar()
@@ -32,6 +49,8 @@ export function NotificacoesProvider({ children }) {
     }
   }
 
+  // Carrega o histórico via API e abre o socket, tratando notificações novas
+  // e atualizações de notificações já conhecidas (evita duplicar o replay).
   async function conectar() {
     if (socketRef.current) return
     const conexaoId = ++conexaoIdRef.current
@@ -70,6 +89,7 @@ export function NotificacoesProvider({ children }) {
     socketRef.current = socket
   }
 
+  // Invalida a conexão atual e fecha o socket, se aberto.
   function desconectar() {
     conexaoIdRef.current++
     if (socketRef.current) {
@@ -78,6 +98,11 @@ export function NotificacoesProvider({ children }) {
     }
   }
 
+  /**
+   * Marca uma notificação como lida na API e atualiza o estado local.
+   * @param {string} id Id da notificação.
+   * @returns {Promise<void>}
+   */
   async function marcarLida(id) {
     const res = await marcarNotificacaoLida(id)
     setNotificacoes((prev) => prev.map((n) => (n.id === id ? res.data : n)))
@@ -92,6 +117,10 @@ export function NotificacoesProvider({ children }) {
   )
 }
 
+/**
+ * Hook de acesso ao contexto de notificações.
+ * @returns {{notificacoes: object[], naoLidasCount: number, novaNotificacao: object|null, marcarLida: (id: string) => Promise<void>}} Estado e ações de notificações.
+ */
 export function useNotificacoes() {
   return useContext(NotificacoesContext)
 }

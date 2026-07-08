@@ -1,3 +1,11 @@
+/**
+ * DTO de login. Define e valida e-mail e senha recebidos no corpo da
+ * requisição de autenticação.
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 20/06/2026
+ * Atualização: 07/07/2026
+ */
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsString } from 'class-validator';
 

@@ -1,8 +1,20 @@
+/**
+ * Página de login. Autentica o usuário via API, guarda token e dados e
+ * redireciona para a Home; já loga direto se houver sessão ativa.
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 23/06/2026
+ * Atualização: 07/07/2026
+ */
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { apiFetch } from '../api'
 import { isLoggedIn, setToken, setUser } from '../auth'
 
+/**
+ * Renderiza o formulário de login.
+ * @returns {JSX.Element} Página de login.
+ */
 export default function Login() {
   const navigate = useNavigate()
   const [form, setForm] = useState({ email: '', password: '' })
@@ -13,10 +25,12 @@ export default function Login() {
     if (isLoggedIn()) navigate('/')
   }, [navigate])
 
+  // Atualiza o campo do formulário conforme o input alterado.
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
+  // Envia as credenciais, salva a sessão e redireciona; trata erro de login.
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')

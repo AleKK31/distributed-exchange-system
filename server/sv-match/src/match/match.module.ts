@@ -1,3 +1,12 @@
+/**
+ * Módulo de match: registra a entidade Proposta, o controller HTTP, o
+ * consumidor AMQP, o service e o serviço de expiração, importando os módulos de
+ * autenticação e do cliente RMQ.
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 21/06/2026
+ * Atualização: 07/07/2026
+ */
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';

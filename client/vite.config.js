@@ -1,3 +1,12 @@
+/**
+ * Configuração do Vite (build e dev server) do frontend. Habilita o plugin do
+ * React e define os proxies de desenvolvimento (/api/* e /socket.io) para os
+ * serviços rodando localmente nas portas 3001-3004.
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 23/06/2026
+ * Atualização: 07/07/2026
+ */
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 

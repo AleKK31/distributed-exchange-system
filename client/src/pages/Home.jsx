@@ -1,3 +1,11 @@
+/**
+ * Página inicial. Lista as publicações disponíveis com filtro por categoria e
+ * paginação (estado sincronizado na URL) e leva ao detalhe de cada publicação.
+ *
+ * Autor: Alexandre Borges Baccarini Junior e Leonardo Naime Lima
+ * Criação: 23/06/2026
+ * Atualização: 07/07/2026
+ */
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { apiFetch } from '../api'
@@ -12,6 +20,10 @@ const statusBadge = {
   removido:   'bg-red-100 text-red-400',
 }
 
+/**
+ * Renderiza a listagem de publicações disponíveis.
+ * @returns {JSX.Element} Página inicial.
+ */
 export default function Home() {
   const [searchParams, setSearchParams] = useSearchParams()
   const page      = parseInt(searchParams.get('page') || '1', 10)
@@ -38,10 +50,12 @@ export default function Home() {
       .finally(() => setLoading(false))
   }, [page, categoria])
 
+  // Atualiza a página atual na URL.
   function setPage(p) {
     setSearchParams((prev) => { prev.set('page', p); return prev })
   }
 
+  // Aplica o filtro de categoria (voltando à primeira página).
   function setCategoria(c) {
     setSearchParams(c ? { categoria: c, page: 1 } : { page: 1 })
   }
