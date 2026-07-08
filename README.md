@@ -8,6 +8,10 @@ Aplicação distribuída de marketplace para troca de itens, desenvolvida com mi
 
 A documentação da arquitetura do sistema, fluxos e as interfaces estão aqui: [Descrição arquitetura.pdf](./Descrição%20arquitetura.pdf).
 
+## Vídeo de apresentação
+
+[Assista no YouTube](https://youtu.be/6i0eTvxlL_g)
+
 ## Tecnologias utilizadas
 
 - **NestJS** — _framework_ dos microsserviços de backend.
@@ -18,7 +22,7 @@ A documentação da arquitetura do sistema, fluxos e as interfaces estão aqui: 
 
 ## Bibliotecas usadas
 
-**Backend (NestJS 11):**
+**Backend:**
 
 - `@nestjs/*` (core, common, config, jwt, passport, microservices, websockets, swagger, typeorm) — framework e integrações.
 - `typeorm` + `pg` — ORM e driver PostgreSQL.
